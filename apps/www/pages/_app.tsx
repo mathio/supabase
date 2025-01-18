@@ -29,6 +29,7 @@ import useDarkLaunchWeeks from '../hooks/useDarkLaunchWeeks'
 interface MyAppProps extends AppProps {
   pageProps: {
     acceptLanguage?: string
+    cookies?: string
   }
 }
 
@@ -67,7 +68,7 @@ export default function App({ Component, pageProps }: MyAppProps) {
         includeMsApplicationConfig
         includeRssXmlFeed
       />
-      <Intl language={pageProps.acceptLanguage}>
+      <Intl acceptLanguage={pageProps.acceptLanguage} cookies={pageProps.cookies}>
         <DefaultSeo
           title={site_title}
           description={DEFAULT_META_DESCRIPTION}
@@ -117,6 +118,7 @@ App.getInitialProps = async ({ ctx }: { ctx: any }) => {
   return {
     pageProps: {
       acceptLanguage: ctx.req?.headers['accept-language'],
+      cookies: ctx.req?.headers.cookie,
     },
   }
 }
