@@ -9,6 +9,7 @@ import {
   ThemeProvider,
   useThemeSandbox,
 } from 'common'
+import { Intl } from '~/lib/intl'
 import { DefaultSeo } from 'next-seo'
 import { AppProps } from 'next/app'
 import Head from 'next/head'
@@ -25,7 +26,13 @@ import { WwwCommandMenu } from '~/components/CommandMenu'
 import { API_URL, APP_NAME, DEFAULT_META_DESCRIPTION } from '~/lib/constants'
 import useDarkLaunchWeeks from '../hooks/useDarkLaunchWeeks'
 
-export default function App({ Component, pageProps }: AppProps) {
+interface MyAppProps extends AppProps {
+  pageProps: {
+    acceptLanguage?: string
+  }
+}
+
+export default function App({ Component, pageProps }: MyAppProps) {
   const router = useRouter()
   const { hasAcceptedConsent } = useConsent()
 
@@ -60,46 +67,56 @@ export default function App({ Component, pageProps }: AppProps) {
         includeMsApplicationConfig
         includeRssXmlFeed
       />
-      <DefaultSeo
-        title={site_title}
-        description={DEFAULT_META_DESCRIPTION}
-        openGraph={{
-          type: 'website',
-          url: 'https://supabase.com/',
-          site_name: 'Supabase',
-          images: [
-            {
-              url: `https://supabase.com${basePath}/images/og/supabase-og.png`,
-              width: 800,
-              height: 600,
-              alt: 'Supabase Og Image',
-            },
-          ],
-        }}
-        twitter={{
-          handle: '@supabase',
-          site: '@supabase',
-          cardType: 'summary_large_image',
-        }}
-      />
+      <Intl language={pageProps.acceptLanguage}>
+        <DefaultSeo
+          title={site_title}
+          description={DEFAULT_META_DESCRIPTION}
+          openGraph={{
+            type: 'website',
+            url: 'https://supabase.com/',
+            site_name: 'Supabase',
+            images: [
+              {
+                url: `https://supabase.com${basePath}/images/og/supabase-og.png`,
+                width: 800,
+                height: 600,
+                alt: 'Supabase Og Image',
+              },
+            ],
+          }}
+          twitter={{
+            handle: '@supabase',
+            site: '@supabase',
+            cardType: 'summary_large_image',
+          }}
+        />
 
-      <AuthProvider>
-        <FeatureFlagProvider API_URL={API_URL}>
-          <ThemeProvider
-            themes={themes.map((theme) => theme.value)}
-            enableSystem
-            disableTransitionOnChange
-            forcedTheme={forceDarkMode ? 'dark' : undefined}
-          >
-            <CommandProvider>
-              <SonnerToaster position="top-right" />
-              <Component {...pageProps} />
-              <WwwCommandMenu />
-              <PageTelemetry API_URL={API_URL} hasAcceptedConsent={hasAcceptedConsent} />
-            </CommandProvider>
-          </ThemeProvider>
-        </FeatureFlagProvider>
-      </AuthProvider>
+        <AuthProvider>
+          <FeatureFlagProvider API_URL={API_URL}>
+            <ThemeProvider
+              themes={themes.map((theme) => theme.value)}
+              enableSystem
+              disableTransitionOnChange
+              forcedTheme={forceDarkMode ? 'dark' : undefined}
+            >
+              <CommandProvider>
+                <SonnerToaster position="top-right" />
+                <Component {...pageProps} />
+                <WwwCommandMenu />
+                <PageTelemetry API_URL={API_URL} hasAcceptedConsent={hasAcceptedConsent} />
+              </CommandProvider>
+            </ThemeProvider>
+          </FeatureFlagProvider>
+        </AuthProvider>
+      </Intl>
     </>
   )
+}
+
+App.getInitialProps = async ({ ctx }: { ctx: any }) => {
+  return {
+    pageProps: {
+      acceptLanguage: ctx.req?.headers['accept-language'],
+    },
+  }
 }

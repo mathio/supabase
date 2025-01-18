@@ -154,6 +154,9 @@
     "dev": {
       "cache": false
     },
+    "i18n": {
+      "cache": false
+    },
     "test": {
       "cache": false
     },
